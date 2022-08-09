@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+  </head>
+  <body>
+    <script>
+      var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 800,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 100 },
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      var fruitsArray = [
+        [100, 50],
+        [200, 50],
+        [300, 50],
+        [400, 50],
+        [500, 50],
+        [600, 50],
+        [700, 50],
+        [150, 100],
+        [250, 100],
+        [350, 100],
+        [450, 100],
+        [550, 100],
+        [650, 100],
+      ];
+      var game = new Phaser.Game(config);
+      var keyA,
+        keyD,
+        player,
+        playerVelocity = 0,
+        fruitCounter = 0,
+        scoreElement;
+
+      function preload() {
+        this.load.setBaseURL("http://localhost:1234/");
+
+        this.load.image("background", "assets/background.png");
+        this.load.image("ball", "assets/ball.png");
+        this.load.image("player", "assets/player.png");
+        this.load.image("fruit", "assets/fruit.png");
+      }
+
+      function create() {
+
+        const updateScore = (score = 0) => {
+          if(scoreElement) {
+            scoreElement.destroy();
+          }
+          scoreElement = this.add.text(50, 750, `Score: ${score}`)
+        }
+        const self = this;
+        this.add.image(400, 400, "background");
+
+        const fruits = this.physics.add.group({
+          immovable: true,
+          allowGravity: false,
+        });
+        fruitsArray.forEach((dimensions) =>
+          fruits.add(
+            this.physics.add.image(dimensions[0], dimensions[1], "fruit")
+          )
+        );
+
+        var ball = this.physics.add.image(400, 100, "ball");
+        ball.setCircle();
+        ball.setFriction(100);
+        ball.setBounce(1, 1);
+        ball.setCollideWorldBounds(true);
+
+        player = this.physics.add.image(400, 780, "player");
+
+        player.setCollideWorldBounds(true);
+        keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+
+        updateScore();
+
+
+        this.physics.add.collider(
+          player,
+          ball,
+          (playerEvent, ballEvent) => {
+            const velocityRate = 500;
+            const playerX = playerEvent.x + playerEvent.width / 2;
+            const ballX = ballEvent.x + ballEvent.width / 2;
+            const position = playerEvent.x - ballEvent.x;
+            const angle = ((position * 90) / 110) * (Math.PI / 180);
+            ball.body.velocity.setTo(
+              -1 * (500 * Math.sin(angle)),
+              -1 * (500 * Math.cos(angle))
+            );
+          },
+          null,
+          this
+        );
+
+        this.physics.add.collider(
+          fruits,
+          ball,
+          (ballEvent, fruitEvent) => {
+            fruitEvent.destroy();
+            fruitCounter++;
+            updateScore(fruitCounter * 10);
+            if (fruitCounter >= fruitsArray.length) {
+              self.add.text(280, 100, "You won!", {
+                fontSize: "50px",
+                align: "center",
+              });
+
+              self.scene.pause();
+            }
+          },
+          null,
+          this
+        );
+
+        ball.body.collideWorldBounds = true;
+        ball.body.onWorldBounds = true;
+
+        this.physics.world.on("worldbounds", (body, up, down, left, right) => {
+          if (down) {
+            self.add.text(250, 100, "Game over!", {
+              fontSize: "50px",
+              align: "center",
+            });
+            self.scene.pause();
+            setTimeout(() => {
+              fruitCounter = 0;
+              this.registry.destroy(); 
+              this.events.off();
+              this.scene.restart();
+            }, 5000);
+          }
+        });
+      }
+      function update() {
+        if (keyA.isDown) {
+          if (playerVelocity > -300) {
+            playerVelocity -= 30;
+          }
+          player.body.velocity.setTo(playerVelocity, 0);
+        }
+        if (keyD.isDown) {
+          if (playerVelocity < 300) {
+            playerVelocity += 30;
+          }
+          player.body.velocity.setTo(playerVelocity, 0);
+        }
+      }
+    </script>
+  </body>
+</html>
