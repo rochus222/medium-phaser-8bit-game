@@ -9,6 +9,7 @@
         type: Phaser.AUTO,
         width: 800,
         height: 800,
+        parent: "game",
         physics: {
           default: "arcade",
           arcade: {
@@ -55,13 +56,12 @@
       }
 
       function create() {
-
         const updateScore = (score = 0) => {
-          if(scoreElement) {
+          if (scoreElement) {
             scoreElement.destroy();
           }
-          scoreElement = this.add.text(50, 750, `Score: ${score}`)
-        }
+          scoreElement = this.add.text(50, 750, `Score: ${score}`);
+        };
         const self = this;
         this.add.image(400, 400, "background");
 
@@ -88,7 +88,6 @@
         keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         updateScore();
-
 
         this.physics.add.collider(
           player,
@@ -140,7 +139,7 @@
             self.scene.pause();
             setTimeout(() => {
               fruitCounter = 0;
-              this.registry.destroy(); 
+              this.registry.destroy();
               this.events.off();
               this.scene.restart();
             }, 5000);
@@ -162,5 +161,17 @@
         }
       }
     </script>
+    <div id="game" style="margin: 20px auto; width: 800px"></div>
+    <div style="text-align: center">
+      <a href="https://www.freepik.com/vectors/arcade-game"
+        >Arcade game vector created by macrovector - www.freepik.com</a
+      ><br />
+      <a href="https://www.freepik.com/vectors/pixel-icon"
+        >Pixel icon vector created by gstudioimagen1 - www.freepik.com</a
+      ><br />
+      <a href="https://www.freepik.com/vectors/fruit-icon"
+        >Fruit icon vector created by rawpixel.com - www.freepik.com</a
+      ><br />
+    </div>
   </body>
 </html>
